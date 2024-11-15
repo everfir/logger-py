@@ -1,0 +1,33 @@
+# Python 编译文件
+__pycache__/
+*.py[cod]
+
+# 虚拟环境
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# 日志文件
+*.log
+
+# IDE 配置文件
+.idea/
+.vscode/
+
+# Python 包
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 其他
+*.DS_Store
+*.egg
+*.egg-info
+*.pyo
+*.pyd
