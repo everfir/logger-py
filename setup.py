@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='logger',  # 项目名称
-    version='0.1.0',  # 项目版本
+    name='everfir_logger',  # 项目名称
+    version='0.1.2',  # 项目版本
     author='houyibin',  # 作者姓名
     author_email='houyibin@everfir.com',  # 作者邮箱
     description='A brief description of your project',  # 项目描述
@@ -45,5 +45,5 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
-    python_requires='>=3.6',  # Python 版本要求
+    python_requires='>=3.0',  # Python 版本要求
 ) 
