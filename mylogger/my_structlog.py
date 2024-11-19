@@ -41,23 +41,23 @@ class MyStructlogger(Logger):
         self.logger = structlog.getLogger()
         pass
 
-    def Fatal(self, msg: str, **kwargs):
+    def fatal(self, msg: str, **kwargs):
         self.logger.critical(msg, **kwargs, stack_info=True)
         pass
 
-    def Error(self, msg: str, **kwargs):
+    def error(self, msg: str, **kwargs):
         self.logger.error(msg, **kwargs)    
         pass
 
-    def Warn(self, msg: str, **kwargs):
+    def warn(self, msg: str, **kwargs):
         self.logger.warn(msg, **kwargs)
         pass
 
-    def Info(self, msg: str, **kwargs):
+    def info(self, msg: str, **kwargs):
         self.logger.info(msg, **kwargs)
         pass
 
-    def Debug(self, msg: str, **kwargs):
+    def debug(self, msg: str, **kwargs):
         self.logger.debug(msg, **kwargs)   
         pass
     pass

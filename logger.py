@@ -1,68 +1,112 @@
-from curses import ERR
-from typing import List, Dict
+from typing import List, Tuple, Optional
 
+from mytracer.tracer import Tracer
 from mylogger import Logger, NewLogger
-from config import option as option, GetConfig, DEBUG, ERROR
-# TODO
+from config.log_config import LogConfig
+from config import option as option, GetConfig, ERROR
+
+from opentelemetry import trace
+from opentelemetry.context import Context
+from opentelemetry.trace.span import Span
+from opentelemetry.propagators.textmap import TextMapPropagator
+
 class myLogger(Logger):
     def __init__(self, options: List[option.Option]=[]):
-        self.config = GetConfig()
+        self.config: LogConfig = GetConfig()
         for option in options:
             option(self.config)
+
         self.logger = NewLogger(self.config)
+        self.tracer = Tracer(self.config.tracer_config) 
         pass
 
-    def Fatal(self, ctx: Dict[str, object], msg: str, **kwargs):
-        return self.logger.Fatal(msg, **kwargs)
+    def init(self) -> Optional[Exception]:
+        return self.tracer.init()
 
-    def Error(self, ctx: Dict[str, object], msg: str, **kwargs):
-        return self.logger.Error(msg, **kwargs)
+    def fatal(self, ctx: dict, msg: str, **kwargs):
+        self.fixFields(ctx, kwargs)
+        return self.logger.fatal(msg, **kwargs)
 
-    def Warn(self, ctx: Dict[str, object], msg: str, **kwargs):
-        return self.logger.Warn(msg, **kwargs)
+    def error(self, ctx: dict, msg: str, **kwargs):
+        self.fixFields(ctx, kwargs)
+        return self.logger.error(msg, **kwargs)
 
-    def Info(self, ctx: Dict[str, object], msg: str, **kwargs):
-        return self.logger.Info(msg, **kwargs) 
+    def warn(self, ctx: dict, msg: str, **kwargs):
+        self.fixFields(ctx, kwargs)
+        return self.logger.warn(msg, **kwargs)
 
-    def Debug(self, ctx: Dict[str, object], msg: str, **kwargs):
-        return self.logger.Debug(msg, **kwargs)    
+    def info(self, ctx: dict, msg: str, **kwargs):
+        self.fixFields(ctx, kwargs)
+        return self.logger.info(msg, **kwargs) 
+
+    def debug(self, ctx: dict, msg: str, **kwargs):
+        self.fixFields(ctx, kwargs)
+        return self.logger.debug(msg, **kwargs)    
+    
+    def fixFields(self, ctx: dict, args: dict) -> None:
+        span = trace.get_current_span(Context(ctx))
+        if not span:
+            return
+
+        args["span_id"] = span.get_span_context().span_id
+        args["trace_id"] = span.get_span_context().trace_id
+        return
     pass
 
 
-_myLogger = myLogger() # 默认配置
-def InitWithOptions(opts: List[option.Option] = []) -> None:
+def Init(opts: List[option.Option] = []) -> None:
+    global _myLogger
+
     _myLogger = myLogger(opts)
-    return
+    _myLogger.init()
+    pass
+
 # 导出接口
-def Fatal(ctx: Dict[str, object], msg: str, **kwargs):
-    _myLogger.Fatal(ctx, msg, **kwargs)
+def Fatal(ctx: dict, msg:str, **kwargs):
+    _myLogger.fatal(ctx=ctx, msg=msg, **kwargs)
     return
 
-def Error(ctx: Dict[str, object], msg: str, **kwargs):
-    _myLogger.Error(ctx, msg, **kwargs)
+def Error(ctx: dict, msg:str, **kwargs):
+    _myLogger.error(ctx=ctx, msg=msg, **kwargs)
     return  
 
-def Warn(ctx: Dict[str, object], msg: str, **kwargs):
-    _myLogger.Warn(ctx, msg, **kwargs)
+def Warn(ctx: dict, msg:str, **kwargs):
+    _myLogger.warn(ctx=ctx, msg=msg, **kwargs)
     return
 
-def Info(ctx: Dict[str, object], msg: str, **kwargs):
-    _myLogger.Info(ctx, msg, **kwargs)
+def Info(ctx: dict, msg:str, **kwargs):
+    _myLogger.info(ctx=ctx, msg=msg, **kwargs)
     return  
 
-def Debug(ctx: Dict[str, object], msg: str, **kwargs):
-    _myLogger.Debug(ctx, msg, **kwargs)
+def Debug(ctx: dict, msg:str, **kwargs):
+    _myLogger.debug(ctx=ctx, msg=msg, **kwargs)
     return  
+
+def StartSpan(ctx: dict, name: str) -> Tuple[dict, Span]:
+    return _myLogger.tracer.start_span(ctx=ctx, name=name)
+
+def Inject(ctx: dict, carrier: dict) -> None:
+    return _myLogger.tracer.inject(ctx=ctx, carrier=carrier)
+
+def Extract(ctx: dict, carrier: dict) -> Optional[dict]:
+    return _myLogger.tracer.extract(ctx=ctx, carrier=carrier)
+
+
+
+_myLogger = myLogger() # 默认配置
+if e := _myLogger.init():
+    Error({}, msg="logger-py init error", error=e)
+    raise e
 
 #测试样例
 if __name__ == "__main__":
     # not necessary to call this function
-    InitWithOptions([
+    Init([
         option.WithCaller(enable=True, keep_level=2),
         option.WithLogLevel(level=ERROR),
     ])
 
-    Fatal({}, "fatal test", 测试字段="sss", 测试=2) 
+    # Fatal({}, "fatal test", 测试字段="sss", 测试=2) 
     Error({}, "error test", 测试字段="sss", 测试=2)
     Warn({}, "warn test", 测试字段="sss", 测试=2)
     Info({}, "info test", 测试字段="sss", 测试=2)

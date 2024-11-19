@@ -10,9 +10,6 @@ def WithLogLevel(level: LOG_LEVEL) -> Option:
 def WithLogFile(file: str) -> Option:
     return lambda config: setattr(config, "log_file", file)
 
-def WithLogFileFormat(format: str) -> Option:
-    return lambda config: setattr(config, "log_file_name_format", format)
-
 def WithLogRotation(rotation: bool) -> Option:
     return lambda config: setattr(config, "rotation", rotation)
 
@@ -21,8 +18,9 @@ def WithLogRotationInterval(interval: int) -> Option:
 
 def WithCaller(enable: bool, keep_level: int = 3) -> Option:
     def handler(config: LogConfig) -> None:
-        config.enable_caller = enable
-        config.caller_keep_level = keep_level
+        setattr(config, "enable_caller", enable)
+        setattr(config, "caller_keep_level", keep_level)
     return handler
 
-
+def WithTracer(enable: bool) -> Option:
+    return lambda config: setattr(config.tracer_config, "enable", enable)
