@@ -1,5 +1,4 @@
-import os
-from config.tracer_config import TracerConfig
+from logger_py.config.tracer_config import TracerConfig
 
 # 日志等级
 type LOG_LEVEL = str

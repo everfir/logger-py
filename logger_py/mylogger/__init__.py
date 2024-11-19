@@ -1,6 +1,6 @@
-from mylogger.abstract import Logger
-from config.log_config import LogConfig
-from mylogger.my_structlog import MyStructlogger
+from logger_py.mylogger.abstract import Logger
+from logger_py.config.log_config import LogConfig
+from logger_py.mylogger.my_structlog import MyStructlogger
 
 
 

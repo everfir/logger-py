@@ -1,10 +1,11 @@
 import inspect
 import logging
+
+
+from logger_py.mylogger import Logger
+from logger_py.config.log_config import LogConfig
+
 import structlog    
-
-
-from mylogger import Logger
-from config.log_config import LogConfig
 from logging.handlers import TimedRotatingFileHandler  # 导入时间滚动处理器
 
 

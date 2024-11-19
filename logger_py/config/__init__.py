@@ -1,5 +1,5 @@
-from config.option import *
-from config.log_config import *
+from logger_py.config.option import *
+from logger_py.config.log_config import *
 
 
 

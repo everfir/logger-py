@@ -1,6 +1,7 @@
-from config.log_config import LogConfig, GetConfig
-from config.log_config import LOG_LEVEL
 from typing import Callable
+
+from logger_py.config.log_config import LogConfig, GetConfig
+from logger_py.config.log_config import LOG_LEVEL
 
 type Option = Callable[[LogConfig], None]
 

@@ -1,14 +1,13 @@
 from typing import List, Tuple, Optional
 
-from mytracer.tracer import Tracer
-from mylogger import Logger, NewLogger
-from config.log_config import LogConfig
-from config import option as option, GetConfig, ERROR
+from logger_py.mytracer.tracer import Tracer
+from logger_py.mylogger import Logger, NewLogger
+from logger_py.config.log_config import LogConfig
+from logger_py.config import option as option, GetConfig, ERROR
 
 from opentelemetry import trace
 from opentelemetry.context import Context
 from opentelemetry.trace.span import Span
-from opentelemetry.propagators.textmap import TextMapPropagator
 
 class myLogger(Logger):
     def __init__(self, options: List[option.Option]=[]):

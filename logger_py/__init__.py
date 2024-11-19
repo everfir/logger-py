@@ -1,6 +1,4 @@
-from logger import *
-import config
-
+import logger_py.config as config
 
 # logger
 __all__ = [

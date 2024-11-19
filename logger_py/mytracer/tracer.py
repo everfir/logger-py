@@ -1,8 +1,8 @@
 import time
 from typing import Tuple, Optional
 
-from utils.env import get_container_ip
-from config.tracer_config import TracerConfig
+from logger_py.utils.env import get_container_ip
+from logger_py.config.tracer_config import TracerConfig
 
 from opentelemetry import trace
 from opentelemetry.trace.span import Span
