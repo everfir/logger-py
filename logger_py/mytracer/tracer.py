@@ -3,9 +3,7 @@ from typing import Tuple, Optional
 
 from logger_py.utils.env import get_container_ip
 from logger_py.config.tracer_config import TracerConfig
-
-from opentelemetry import trace
-from opentelemetry.trace.span import Span
+from opentelemetry import trace from opentelemetry.trace.span import Span
 from opentelemetry.context import Context
 from opentelemetry.propagators import textmap
 from opentelemetry.sdk.resources import Resource

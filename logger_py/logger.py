@@ -1,3 +1,4 @@
+from calendar import c
 from typing import List, Tuple, Optional
 
 from logger_py.mytracer.tracer import Tracer
@@ -90,7 +91,12 @@ def Inject(ctx: dict, carrier: dict) -> None:
 def Extract(ctx: dict, carrier: dict) -> Optional[dict]:
     return _myLogger.tracer.extract(ctx=ctx, carrier=carrier)
 
+def WrapHeader(ctx:dict, header:dict) -> dict:
+    if not ctx:
+        return header
 
+    Inject(ctx=ctx, carrier=header)
+    return header
 
 _myLogger = myLogger() # 默认配置
 if e := _myLogger.init():

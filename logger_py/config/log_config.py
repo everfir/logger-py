@@ -1,7 +1,7 @@
 from logger_py.config.tracer_config import TracerConfig
 
 # 日志等级
-type LOG_LEVEL = str
+LOG_LEVEL = str
 DEBUG: LOG_LEVEL = "DEBUG"
 INFO: LOG_LEVEL = "INFO"
 WARN: LOG_LEVEL = "WARN"

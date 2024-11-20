@@ -1,4 +1,4 @@
-import logger
+from logger_py import logger
 import flask
 import requests  # 导入 requests 库以发送 HTTP 请求
 import threading  # 导入 threading 模块以实现多线程
@@ -6,7 +6,7 @@ from typing import Optional, Dict
 
 from trace import Trace
 from opentelemetry import trace
-from config import option, DEBUG, ERROR
+from logger_py.config import option, DEBUG, ERROR
 from opentelemetry.trace.span import Span
 from opentelemetry.context import Context
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
@@ -56,19 +56,26 @@ server_thread = threading.Thread(target=run_server)
 server_thread.start()  # 启动服务器线程
 
 
+class BaseContext(object):
+    def TracingHeader(self, header: dict) -> dict:
+        carrier = {}
+        logger.Inject(ctx=ctx, carrier=carrier)
+        header.update(carrier)
+        return header
 
 # client， 模拟客户端，往服务端接口发送请求
 def send_request(ctx: Dict[str, object]):
-    carrier = {}
-    logger.Inject(ctx=ctx, carrier=carrier)
-    logger.Debug(ctx=ctx, msg="http headers", headers=carrier)
-    
+    # carrier = {}
+    # logger.Inject(ctx=ctx, carrier=carrier)
 
+    header = {}
+    header["test_header"] = "test_value"
+    header = BaseContext().TracingHeader(header)
 
     logger.Info(ctx, "Sending request to server")  # 打印发送请求的日志
     response = requests.get(
         url=f'http://localhost:{port}/hello', 
-        headers=carrier,
+        headers=header,
     )
 
     logger.Info(ctx, "Client request sent")  # 打印客户端请求日志
@@ -90,4 +97,5 @@ logger.Info(
 )
 
 with span:
+
     send_request(ctx)  # 发送请求并打印日志

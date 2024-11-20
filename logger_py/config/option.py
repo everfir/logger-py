@@ -3,7 +3,7 @@ from typing import Callable
 from logger_py.config.log_config import LogConfig, GetConfig
 from logger_py.config.log_config import LOG_LEVEL
 
-type Option = Callable[[LogConfig], None]
+Option = Callable[[LogConfig], None]
 
 def WithLogLevel(level: LOG_LEVEL) -> Option: 
     return lambda config: setattr(config, "level", level)
