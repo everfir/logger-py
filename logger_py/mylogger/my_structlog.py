@@ -11,6 +11,29 @@ from logging.handlers import TimedRotatingFileHandler  # 导入时间滚动处�
 
 class MyStructlogger(Logger):
     def __init__(self, config: LogConfig): 
+        log_handlers = []       
+        console_handler = logging.StreamHandler()  # 创建控制台处理器
+        console_handler.setFormatter(logging.Formatter('%(message)s'))  # 设置日志格式
+        log_handlers.append(console_handler)
+        
+
+        if config.log_file:
+            # 配置日志处理器，支持按小时滚动
+            file_handler = TimedRotatingFileHandler(
+            config.log_file,  # 日志文件名
+            when='S',  # 每小时滚动
+            interval=1,  # 每小时滚动一次
+                backupCount=168  # 默认保留最近 168 个备份
+            )
+            # # 设置日志处理器的格式
+            # log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))  # 设置文件日志格式
+            log_handlers.append(file_handler)
+
+        logging.basicConfig(
+            level=logging._nameToLevel[config.level],   # 日志截断
+            handlers=log_handlers, 
+        )       
+
         processors = [
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt='iso'),  # 添加时间戳
@@ -21,24 +44,14 @@ class MyStructlogger(Logger):
             processors.append(callerProcessor(config.caller_keep_level))
         processors.append(structlog.processors.JSONRenderer(ensure_ascii=False)) # 以json格式输出
 
-
         # 配置 structlog
         structlog.configure(
             processors=processors,  # 动态填充的处理器列表
+            context_class=dict,
+            logger_factory=structlog.stdlib.LoggerFactory(),
         )
         
-        # 配置日志处理器，支持按小时滚动
-        log_handler = TimedRotatingFileHandler(
-            'app.log',  # 日志文件名
-            when='h',  # 每小时滚动
-            interval=1,  # 每小时滚动一次
-            backupCount=168  # 默认保留最近 168 个备份
-        )
-
-        logging.basicConfig(
-            level=logging._nameToLevel[config.level],   # 日志截断
-            handlers=[log_handler] # 日志滚动
-        )   
+           
         self.logger = structlog.getLogger()
         pass
 
@@ -62,7 +75,6 @@ class MyStructlogger(Logger):
         self.logger.debug(msg, **kwargs)   
         pass
     pass
-
 
 class callerProcessor():
     def __init__(self, level: int):

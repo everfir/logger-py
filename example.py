@@ -1,10 +1,11 @@
-from logger_py import logger
+import flask.logging
 import flask
 import requests  # 导入 requests 库以发送 HTTP 请求
 import threading  # 导入 threading 模块以实现多线程
 from typing import Optional, Dict
 
 from trace import Trace
+from logger_py import logger
 from opentelemetry import trace
 from logger_py.config import option, DEBUG, ERROR
 from opentelemetry.trace.span import Span
@@ -15,7 +16,7 @@ from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapProp
 logger.Init([
     option.WithCaller(enable=True, keep_level=2),
     option.WithLogLevel(level=DEBUG),
-    option.WithTracer(enable=True),
+    option.WithTracer(enable=False),
 ])
 
 # 创建 Flask 应用

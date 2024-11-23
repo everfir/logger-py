@@ -1,4 +1,3 @@
-from calendar import c
 from typing import List, Tuple, Optional
 
 from logger_py.mytracer.tracer import Tracer
