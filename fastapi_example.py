@@ -57,19 +57,18 @@ def run_server():
 
 
 # 客户端上下文类
-class BaseContext(object):
-    def TracingHeader(self, header: dict) -> dict:
-        carrier = {}
-        logger.Inject(ctx=ctx, carrier=carrier)
-        header.update(carrier)
-        return header
+def TracingHeader(ctx: dict, header: dict) -> dict:
+    carrier = {}
+    logger.Inject(ctx=ctx, carrier=carrier)
+    header.update(carrier)
+    return header
 
 
 # 客户端请求函数
 def send_request(ctx: Dict[str, object]):
     header = {}
     header["test_header"] = "test_value"
-    header = BaseContext().TracingHeader(header)
+    header = TracingHeader(ctx=ctx, header=header)
 
     logger.Info(ctx, "Sending request to server")
     response = requests.get(
