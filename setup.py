@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="everfir_logger",  # 项目名称
-    version="0.2.5",  # 项目版本
+    version="0.2.6",  # 项目版本
     author="houyibin",  # 作者姓名
     author_email="houyibin@everfir.com",  # 作者邮箱
     description="A brief description of your project",  # 项目描述
