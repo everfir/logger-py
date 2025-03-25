@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from logger_py import logger
 from opentelemetry import trace
 from opentelemetry.context import Context
-from logger_py.config import option, ERROR
+from logger_py.config import option, INFO
 from starlette.middleware.base import BaseHTTPMiddleware
 
 # 创建 FastAPI 应用
@@ -18,9 +18,8 @@ port = 10086
 logger.Init(
     [
         option.WithCaller(enable=True, keep_level=2),
-        option.WithLogLevel(level=ERROR),
-        option.WithTracer(enable=False),
-        option.WithLogFile(file="logs/fastapi_example.log"),
+        option.WithLogLevel(level=INFO),
+        option.WithTracer(enable=True),
     ]
 )
 

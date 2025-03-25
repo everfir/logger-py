@@ -11,6 +11,6 @@ class TracerConfig:
         self.Compression: Compression = Compression.NoCompression
 
         self.ServiceName: str = os.getenv("SERVICE_NAME") or ""
-        self.CollectorEndpoint: str = os.getenv("OTEL_COLLECTOR_DNS") or DEFAULT_OTEL_ENDPOINT
         pass
+
     pass
