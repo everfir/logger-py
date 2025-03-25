@@ -1,13 +1,10 @@
 from typing import List, Tuple, Optional
 
+from opentelemetry.trace.span import Span
 from logger_py.mytracer.tracer import Tracer
 from logger_py.mylogger import Logger, NewLogger
-from logger_py.config.log_config import LogConfig
-from logger_py.config import option as option, GetConfig, ERROR
-
-from opentelemetry import trace
-from opentelemetry.context import Context
-from opentelemetry.trace.span import Span
+from logger_py.config import option as option, GetConfig
+from logger_py.config.log_config import LogConfig, LOG_LEVEL
 
 
 class myLogger(Logger):
@@ -111,7 +108,7 @@ if __name__ == "__main__":
     Init(
         [
             option.WithCaller(enable=True, keep_level=2),
-            option.WithLogLevel(level=ERROR),
+            option.WithLogLevel(level=LOG_LEVEL.ERROR),
         ]
     )
 

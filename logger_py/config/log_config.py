@@ -1,19 +1,21 @@
 import logging
+from enum import StrEnum
 from logger_py.config.tracer_config import TracerConfig
 
+
 # 日志等级
-LOG_LEVEL = str
-DEBUG: LOG_LEVEL = logging._levelToName[logging.DEBUG]
-INFO: LOG_LEVEL = logging._levelToName[logging.INFO]
-WARN: LOG_LEVEL = logging._levelToName[logging.WARNING]
-ERROR: LOG_LEVEL = logging._levelToName[logging.ERROR]
-FATAL: LOG_LEVEL = logging._levelToName[logging.CRITICAL]
+class LOG_LEVEL(StrEnum):
+    DEBUG: str = logging._levelToName[logging.DEBUG]
+    INFO: str = logging._levelToName[logging.INFO]
+    WARN: str = logging._levelToName[logging.WARNING]
+    ERROR: str = logging._levelToName[logging.ERROR]
+    FATAL: str = logging._levelToName[logging.CRITICAL]
 
 
 class LogConfig(object):
 
     def __init__(self):
-        self.level: LOG_LEVEL = INFO  # 日志等级
+        self.level: LOG_LEVEL = LOG_LEVEL.INFO  # 日志等级
 
         # 日志输出配置
         self.log_file: str = ""  # 日志输出路径
