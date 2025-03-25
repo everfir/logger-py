@@ -17,7 +17,6 @@ from opentelemetry.sdk.trace.sampling import ALWAYS_ON
 
 
 class Tracer:
-    container_ip: str = get_container_ip()
     none_span: Span = trace.NonRecordingSpan(
         trace.SpanContext(trace_id=0, span_id=0, is_remote=False)
     )
@@ -40,11 +39,6 @@ class Tracer:
     def close(self) -> None:
         if self.provider:
             self.provider.shutdown()
-        pass
-
-    def fixFields(self, ctx: dict) -> None:
-        ctx["container.ip"] = self.container_ip
-        ctx["serviceName"] = self.config.ServiceName
         pass
 
     def start_span(self, ctx: dict, name: str) -> Tuple[dict, Span]:

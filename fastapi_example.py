@@ -25,9 +25,27 @@ logger.Init(
 
 
 # 创建追踪中间件
+# 创建追踪中间件
 class TraceMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        ctx, span = logger.StartSpan(ctx={}, name="fastapi_request")
+        # 从header中获取追踪信息
+        headers = dict(request.headers)
+        carrier = {"traceparent": headers.get("traceparent", "")}
+
+        ctx: dict = {}
+        if carrier.get("traceparent"):
+            ctx = logger.Extract(ctx=ctx, carrier=carrier)
+            logger.Info(ctx=ctx, msg="trace middleware carrier", carrier=ctx)
+
+        try:
+            ctx, span = logger.StartSpan(ctx=ctx, name="fastapi_request")
+        except Exception as e:
+            # 如果解析失败，创建新的span
+            ctx, span = logger.StartSpan(ctx={}, name="fastapi_request")
+
+        logger.Info(ctx=ctx, msg="trace middleware", span=span, carrier=ctx)
+
+        # 设置请求上下文
         ctx = trace.set_span_in_context(span=span, context=Context(ctx))
         request.state.ctx = ctx
         request.state.span = span

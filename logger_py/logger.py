@@ -24,33 +24,24 @@ class myLogger(Logger):
         return self.tracer.init()
 
     def fatal(self, ctx: dict, msg: str, **kwargs):
-        self.fixFields(ctx, kwargs)
+        kwargs["ctx"] = ctx
         return self.logger.fatal(msg, **kwargs)
 
     def error(self, ctx: dict, msg: str, **kwargs):
-        self.fixFields(ctx, kwargs)
+        kwargs["ctx"] = ctx
         return self.logger.error(msg, **kwargs)
 
     def warn(self, ctx: dict, msg: str, **kwargs):
-        self.fixFields(ctx, kwargs)
+        kwargs["ctx"] = ctx
         return self.logger.warn(msg, **kwargs)
 
     def info(self, ctx: dict, msg: str, **kwargs):
-        self.fixFields(ctx, kwargs)
+        kwargs["ctx"] = ctx
         return self.logger.info(msg, **kwargs)
 
     def debug(self, ctx: dict, msg: str, **kwargs):
-        self.fixFields(ctx, kwargs)
+        kwargs["ctx"] = ctx
         return self.logger.debug(msg, **kwargs)
-
-    def fixFields(self, ctx: dict, args: dict) -> None:
-        span = trace.get_current_span(Context(ctx))
-        if not span:
-            return
-
-        args["span_id"] = span.get_span_context().span_id
-        args["trace_id"] = span.get_span_context().trace_id
-        return
 
     pass
 

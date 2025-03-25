@@ -2,12 +2,33 @@ import inspect  # 用于获取调用栈信息
 import logging  # Python标准日志库
 import os  # 用于文件和目录操作
 
-
 from logger_py.mylogger import Logger  # 导入基础日志接口
 from logger_py.config.log_config import LogConfig  # 导入日志配置类
+from opentelemetry import trace
+from opentelemetry.context import Context
 
 import structlog  # 结构化日志库
 from logging.handlers import TimedRotatingFileHandler  # 用于实现日志文件按时间滚动
+
+
+def process_span_fields(logger, method_name, event_dict):
+    """处理 span 字段的处理器"""
+    if "ctx" not in event_dict:
+        return event_dict
+
+    ctx = event_dict["ctx"]
+    del event_dict["ctx"]
+    span = trace.get_current_span(Context(ctx))
+    if not span:
+        return event_dict
+
+    span_context = span.get_span_context()
+    if not span_context.is_valid:
+        return event_dict
+
+    event_dict["span_id"] = span_context.span_id
+    event_dict["trace_id"] = span_context.trace_id
+    return event_dict
 
 
 class MyStructlogger(Logger):
@@ -62,6 +83,7 @@ class MyStructlogger(Logger):
         # 配置结构化日志处理器链
         processors = [
             structlog.stdlib.filter_by_level,  # 根据级别过滤日志
+            process_span_fields,  # 处理 span 字段
             structlog.processors.add_log_level,  # 添加日志级别字段
             structlog.processors.TimeStamper(fmt="iso"),  # 添加ISO格式时间戳
             structlog.processors.StackInfoRenderer(),  # 添加堆栈信息
@@ -158,13 +180,21 @@ class callerProcessor:
         frame = inspect.currentframe()
         if frame is None:
             return "unknown"
-        caller_frame = frame.f_back  # 获取上一层调用帧
-        if caller_frame is None:
+
+        # 跳过库内部的调用栈
+        while frame and (
+            "logger_py" in frame.f_code.co_filename
+            or "structlog" in frame.f_code.co_filename
+            or "logging" in frame.f_code.co_filename
+        ):
+            frame = frame.f_back
+
+        if frame is None:
             return "unknown"
 
         # 获取文件名和行号
-        filename = caller_frame.f_code.co_filename
-        lineno = caller_frame.f_lineno
+        filename = frame.f_code.co_filename
+        lineno = frame.f_lineno
 
         # 如果设置了路径保留级别，处理文件路径
         if self.level > 0:
