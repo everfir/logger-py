@@ -9,14 +9,15 @@ from opentelemetry import trace
 from opentelemetry.context import Context
 from opentelemetry.trace.span import Span
 
+
 class myLogger(Logger):
-    def __init__(self, options: List[option.Option]=[]):
+    def __init__(self, options: List[option.Option] = []):
         self.config: LogConfig = GetConfig()
         for option in options:
             option(self.config)
 
         self.logger = NewLogger(self.config)
-        self.tracer = Tracer(self.config.tracer_config) 
+        self.tracer = Tracer(self.config.tracer_config)
         pass
 
     def init(self) -> Optional[Exception]:
@@ -36,12 +37,12 @@ class myLogger(Logger):
 
     def info(self, ctx: dict, msg: str, **kwargs):
         self.fixFields(ctx, kwargs)
-        return self.logger.info(msg, **kwargs) 
+        return self.logger.info(msg, **kwargs)
 
     def debug(self, ctx: dict, msg: str, **kwargs):
         self.fixFields(ctx, kwargs)
-        return self.logger.debug(msg, **kwargs)    
-    
+        return self.logger.debug(msg, **kwargs)
+
     def fixFields(self, ctx: dict, args: dict) -> None:
         span = trace.get_current_span(Context(ctx))
         if not span:
@@ -50,6 +51,7 @@ class myLogger(Logger):
         args["span_id"] = span.get_span_context().span_id
         args["trace_id"] = span.get_span_context().trace_id
         return
+
     pass
 
 
@@ -60,57 +62,69 @@ def Init(opts: List[option.Option] = []) -> None:
     _myLogger.init()
     pass
 
+
 # 导出接口
-def Fatal(ctx: dict, msg:str, **kwargs):
+def Fatal(ctx: dict, msg: str, **kwargs):
     _myLogger.fatal(ctx=ctx, msg=msg, **kwargs)
     return
 
-def Error(ctx: dict, msg:str, **kwargs):
-    _myLogger.error(ctx=ctx, msg=msg, **kwargs)
-    return  
 
-def Warn(ctx: dict, msg:str, **kwargs):
+def Error(ctx: dict, msg: str, **kwargs):
+    _myLogger.error(ctx=ctx, msg=msg, **kwargs)
+    return
+
+
+def Warn(ctx: dict, msg: str, **kwargs):
     _myLogger.warn(ctx=ctx, msg=msg, **kwargs)
     return
 
-def Info(ctx: dict, msg:str, **kwargs):
-    _myLogger.info(ctx=ctx, msg=msg, **kwargs)
-    return  
 
-def Debug(ctx: dict, msg:str, **kwargs):
+def Info(ctx: dict, msg: str, **kwargs):
+    _myLogger.info(ctx=ctx, msg=msg, **kwargs)
+    return
+
+
+def Debug(ctx: dict, msg: str, **kwargs):
     _myLogger.debug(ctx=ctx, msg=msg, **kwargs)
-    return  
+    return
+
 
 def StartSpan(ctx: dict, name: str) -> Tuple[dict, Span]:
     return _myLogger.tracer.start_span(ctx=ctx, name=name)
 
+
 def Inject(ctx: dict, carrier: dict) -> None:
     return _myLogger.tracer.inject(ctx=ctx, carrier=carrier)
+
 
 def Extract(ctx: dict, carrier: dict) -> Optional[dict]:
     return _myLogger.tracer.extract(ctx=ctx, carrier=carrier)
 
-def WrapHeader(ctx:dict, header:dict) -> dict:
+
+def WrapHeader(ctx: dict, header: dict) -> dict:
     if not ctx:
         return header
 
     Inject(ctx=ctx, carrier=header)
     return header
 
-_myLogger = myLogger() # 默认配置
+
+_myLogger = myLogger()  # 默认配置
 if e := _myLogger.init():
     Error({}, msg="logger-py init error", error=e)
     raise e
 
-#测试样例
+# 测试样例
 if __name__ == "__main__":
     # not necessary to call this function
-    Init([
-        option.WithCaller(enable=True, keep_level=2),
-        option.WithLogLevel(level=ERROR),
-    ])
+    Init(
+        [
+            option.WithCaller(enable=True, keep_level=2),
+            option.WithLogLevel(level=ERROR),
+        ]
+    )
 
-    # Fatal({}, "fatal test", 测试字段="sss", 测试=2) 
+    # Fatal({}, "fatal test", 测试字段="sss", 测试=2)
     Error({}, "error test", 测试字段="sss", 测试=2)
     Warn({}, "warn test", 测试字段="sss", 测试=2)
     Info({}, "info test", 测试字段="sss", 测试=2)
