@@ -11,13 +11,14 @@ import structlog  # 结构化日志库
 from logging.handlers import TimedRotatingFileHandler  # 用于实现日志文件按时间滚动
 
 
-def process_span_fields(logger, method_name, event_dict):
-    """处理 span 字段的处理器"""
+def process_ctx_fields(logger, method_name, event_dict):
+    """处理 ctx 字段的处理器"""
     if "ctx" not in event_dict:
         return event_dict
 
     ctx = event_dict["ctx"]
     del event_dict["ctx"]
+
     span = trace.get_current_span(Context(ctx))
     if not span:
         return event_dict
@@ -28,6 +29,34 @@ def process_span_fields(logger, method_name, event_dict):
 
     event_dict["span_id"] = span_context.span_id
     event_dict["trace_id"] = span_context.trace_id
+
+    # 处理所有以 x-everfir- 开头的字段
+    for key, value in ctx.items():
+        if key.startswith("x-everfir-"):
+            # 移除 x-everfir- 前缀
+            new_key = key.replace("x-everfir-", "")
+            
+            if isinstance(value, str):
+                # 如果是字符串，直接添加到 event_dict
+                event_dict[new_key] = value
+            else:
+                # 如果是结构体，尝试获取其实际值
+                try:
+                    # 尝试将对象转换为字典
+                    if hasattr(value, "dict"):
+                        value_dict = value.dict()
+                    elif hasattr(value, "__dict__"):
+                        value_dict = value.__dict__
+                    else:
+                        continue
+                        
+                    # 将字典中的所有值添加到 event_dict
+                    for attr_name, attr_value in value_dict.items():
+                        if not attr_name.startswith("_"):
+                            event_dict[f"{attr_name}"] = attr_value
+                except Exception:
+                    continue
+
     return event_dict
 
 
@@ -83,7 +112,7 @@ class MyStructlogger(Logger):
         # 配置结构化日志处理器链
         processors = [
             structlog.stdlib.filter_by_level,  # 根据级别过滤日志
-            process_span_fields,  # 处理 span 字段
+            process_ctx_fields,  # 处理 ctx 中的字段
             structlog.processors.add_log_level,  # 添加日志级别字段
             structlog.processors.TimeStamper(fmt="iso"),  # 添加ISO格式时间戳
             structlog.processors.StackInfoRenderer(),  # 添加堆栈信息

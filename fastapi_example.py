@@ -3,6 +3,7 @@ import requests
 import threading
 from typing import Dict
 from fastapi import FastAPI, Request
+from pydantic import BaseModel, Field
 
 from logger_py import logger
 from opentelemetry import trace
@@ -97,6 +98,10 @@ def send_request(ctx: Dict[str, object]):
     logger.Info(ctx, "Client request sent")
     logger.Debug(ctx=ctx, msg="Client response received", response=response.text)
 
+class AccountInfo(BaseModel):
+    account_id: int = Field(default=0, description="账户ID")
+    username: str = Field(default="", description="用户名")
+
 
 if __name__ == "__main__":
     # 启动服务器线程
@@ -104,13 +109,19 @@ if __name__ == "__main__":
     server_thread.start()
 
     # 客户端测试代码
-    ctx = {}
+    ctx = {
+        "x-everfir-account-info": AccountInfo(
+            account_id=123,
+            username="user123",
+        ),
+        "x-everfir-platform": "test",
+        "x-everfir-env": "test",
+    }
     ctx, span = logger.StartSpan(ctx=ctx, name="client_request")
     if not span:
         logger.Error(ctx=ctx, msg="Failed to start span")
         exit(1)
     ctx = trace.set_span_in_context(span=span, context=Context(ctx))
-
     logger.Info(ctx=ctx, msg="client_request span started")
 
     with span:
